@@ -1,22 +1,11 @@
-FROM arctiqteam/gitbook-base:3.2.3
-MAINTAINER stewartshea <shea.stewart@arctiq.ca>
+FROM nginx:alpine
 
-# Set paths, permissions, and add content
-ENV APP_ROOT=/opt/app-root
-ENV PATH=${APP_ROOT}/bin:${PATH} HOME=${APP_ROOT}
-COPY bin/ ${APP_ROOT}/bin/
-COPY docs/ ${APP_ROOT}/docs/
-RUN chmod -R u+x ${APP_ROOT}/bin && \
-    chgrp -R 0 ${APP_ROOT} && \
-    chmod -R g=u ${APP_ROOT} /etc/passwd 
+COPY nginx.conf /etc/nginx/nginx.conf
+COPY . /usr/share/nginx/html
 
-# Install gitbook plugins
-RUN cd ${APP_ROOT}/docs && \
-    gitbook install
+RUN chmod -R 777 /var/log/nginx /var/cache/nginx /var/run \
+     && chgrp -R 0 /etc/nginx \
+     && chmod -R g+rwX /etc/nginx \
+     && rm /etc/nginx/conf.d/default.conf
 
-WORKDIR ${APP_ROOT}
-
-EXPOSE 4000
-
-# Do the thing
-CMD ["/bin/bash", "-c", "${APP_ROOT}/bin/run.sh"]
+EXPOSE 8080
